@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Local Model Bench</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar" aria-label="Status">
+        <div>
+          <p class="eyebrow">LM Studio Eval</p>
+          <h1>Local Model Bench</h1>
+        </div>
+        <div class="server-pill" id="serverState">Offline</div>
+      </section>
+
+      <section class="layout">
+        <aside class="panel controls">
+          <div class="panel-head">
+            <h2>Run</h2>
+            <button id="refreshBtn" class="ghost" type="button">Refresh</button>
+          </div>
+
+          <label class="field">
+            <span>LM Studio URL</span>
+            <input id="baseUrl" value="http://localhost:1234/v1" />
+          </label>
+
+          <label class="field">
+            <span>Modell</span>
+            <select id="modelSelect">
+              <option value="auto">auto</option>
+            </select>
+          </label>
+
+          <div class="reasoning-cards" aria-label="Reasoning-Status">
+            <div class="reasoning-card">
+              <span>Maximale Reasoning-Stufe</span>
+              <strong id="reasoningLevelsValue" class="reasoning-value bad">Off</strong>
+            </div>
+            <div class="reasoning-card">
+              <span>Reasoning im Test</span>
+              <strong id="reasoningUsageValue" class="reasoning-value bad">Off</strong>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <label class="field">
+              <span>Temperature</span>
+              <input id="temperature" type="number" value="0" step="0.1" min="0" max="2" />
+            </label>
+            <label class="field">
+              <span>Top P</span>
+              <input id="topP" type="number" value="1" step="0.05" min="0" max="1" />
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label class="field">
+              <span>Max Tokens</span>
+              <input id="maxTokens" type="number" placeholder="unbegrenzt" min="16" />
+            </label>
+            <label class="field">
+              <span>Limit</span>
+              <input id="limit" type="number" placeholder="alle" min="1" />
+            </label>
+          </div>
+
+          <div class="category-head">
+            <span>Kategorien</span>
+            <button id="allCategoriesBtn" class="linklike" type="button">alle</button>
+          </div>
+          <div id="categories" class="categories"></div>
+
+          <div class="run-buttons">
+            <button id="startBtn" class="primary" type="button">Start</button>
+            <button id="stopBtn" class="danger" type="button" disabled>Stop</button>
+          </div>
+        </aside>
+
+        <section class="main-column">
+          <section class="panel monitor">
+            <div class="panel-head">
+              <div>
+                <h2>Live</h2>
+                <p id="runLabel" class="subtle">Kein Lauf aktiv</p>
+              </div>
+              <div class="score-badge" id="liveScore">--%</div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-row">
+                <span id="overallText">0 / 0</span>
+                <span id="phaseText">bereit</span>
+              </div>
+              <div class="progress-track"><div id="overallBar" class="progress-fill"></div></div>
+              <div class="progress-track thin"><div id="phaseBar" class="progress-fill accent"></div></div>
+            </div>
+
+            <div class="current-grid">
+              <div class="current-case">
+                <div class="current-case-head">
+                  <div>
+                    <p class="eyebrow">Aktueller Test</p>
+                    <h3 id="currentTitle">--</h3>
+                    <p id="currentMeta" class="subtle">--</p>
+                  </div>
+                  <button id="abortCaseBtn" class="danger compact" type="button" disabled>Test abbrechen</button>
+                </div>
+              </div>
+              <div class="metric-strip">
+                <div><span id="metricTtft">--</span><small>TTFT</small></div>
+                <div><span id="metricPrefill">--</span><small>Prefill</small></div>
+                <div><span id="metricTps">--</span><small>tok/s</small></div>
+                <div><span id="metricElapsed">--</span><small>Zeit</small></div>
+              </div>
+            </div>
+
+            <pre id="streamOutput" class="stream" aria-live="polite"></pre>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Ergebnisse</h2>
+              <span id="resultCount" class="subtle">0 Tests</span>
+            </div>
+            <div id="categoryChart" class="category-chart"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Test</th>
+                    <th>Kategorie</th>
+                    <th>Ergebnis</th>
+                    <th>TTFT</th>
+                    <th>tok/s</th>
+                    <th>Zeit</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <aside class="panel runs">
+          <div class="panel-head">
+            <h2>Vergleich</h2>
+            <button id="reloadRunsBtn" class="ghost" type="button">Runs</button>
+          </div>
+          <div id="comparisonFilters" class="compare-filters"></div>
+          <div id="comparison" class="comparison"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

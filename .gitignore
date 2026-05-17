@@ -1,0 +1,24 @@
+# Local benchmark results and user data
+runs/
+*.jsonl.tmp
+
+# Local server logs
+*.log
+ui-server.*.log
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependency/cache folders
+node_modules/
+__pycache__/
+*.pyc
+
+# Codex/session handoff notes
+continue.md

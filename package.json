@@ -1,0 +1,24 @@
+{
+  "name": "local-model-bench",
+  "version": "0.1.0",
+  "description": "A local, objective benchmark UI for LM Studio models.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "lm-studio",
+    "llm",
+    "benchmark",
+    "eval",
+    "local-ai"
+  ],
+  "scripts": {
+    "start": "node start_ui.mjs",
+    "build:cases": "node scripts/build_frontier_suite.mjs",
+    "ui": "node ui_server.mjs",
+    "eval": "node run_eval.mjs",
+    "check": "node --check ui_server.mjs && node --check eval_lib.mjs && node --check web/app.js && node --check run_eval.mjs && node --check compare_runs.mjs && node --check start_ui.mjs && node --check scripts/build_frontier_suite.mjs"
+  }
+}
