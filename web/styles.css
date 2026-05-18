@@ -101,6 +101,52 @@ button:hover:not(:disabled) {
   padding: 8px 2px 18px;
 }
 
+.top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.language-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #111416;
+}
+
+.language-option {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.language-option:hover {
+  color: var(--text);
+}
+
+.language-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.language-option:disabled:hover {
+  color: var(--muted);
+}
+
+.language-option.is-active {
+  background: var(--cyan);
+  color: var(--ink);
+}
+
 .eyebrow {
   margin: 0 0 5px;
   color: var(--amber);
@@ -1444,6 +1490,11 @@ th:nth-child(6) {
   .topbar {
     align-items: start;
     flex-direction: column;
+  }
+
+  .top-actions {
+    justify-content: space-between;
+    width: 100%;
   }
 
   .layout,

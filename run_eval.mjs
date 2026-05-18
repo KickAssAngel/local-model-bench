@@ -17,12 +17,29 @@ import {
   writeRunFiles,
 } from "./eval_lib.mjs";
 
+const CASE_FILES = {
+  de: "testfaelle/praxis_de.json",
+  en: "testfaelle/praxis_en.json",
+};
+
+function normalizeSuiteLanguage(value) {
+  return value === "en" ? "en" : "de";
+}
+
+function languageFromCases(filePath, fallback = "de") {
+  const normalized = String(filePath || "").replaceAll("\\", "/");
+  if (normalized.endsWith("/praxis_en.json") || normalized === "testfaelle/praxis_en.json") return "en";
+  if (normalized.endsWith("/praxis_de.json") || normalized === "testfaelle/praxis_de.json") return "de";
+  return normalizeSuiteLanguage(fallback);
+}
+
 function parseArgs(argv) {
   const args = {
     baseUrl: "http://localhost:1234/v1",
     apiKey: process.env.LM_STUDIO_API_KEY || "lm-studio",
     model: "auto",
-    cases: "testfaelle/praxis_de.json",
+    language: "de",
+    cases: null,
     outputDir: "runs",
     categories: [],
     limit: null,
@@ -44,6 +61,7 @@ function parseArgs(argv) {
     if (item === "--base-url") args.baseUrl = next();
     else if (item === "--api-key") args.apiKey = next();
     else if (item === "--model") args.model = next();
+    else if (item === "--lang" || item === "--language") args.language = normalizeSuiteLanguage(next());
     else if (item === "--cases") args.cases = next();
     else if (item === "--output-dir") args.outputDir = next();
     else if (item === "--category") args.categories.push(next());
@@ -61,6 +79,10 @@ function parseArgs(argv) {
       throw new Error(`Unknown argument: ${item}`);
     }
   }
+  args.cases ||= CASE_FILES[normalizeSuiteLanguage(args.language)];
+  args.suiteLanguage = languageFromCases(args.cases, args.language);
+  args.suiteId = `praxis_${args.suiteLanguage}`;
+  args.suiteFile = args.cases;
   return args;
 }
 
@@ -73,6 +95,7 @@ Usage:
 Options:
   --base-url <url>       LM Studio OpenAI-compatible base URL
   --model <id|auto>      Model id, or auto for first loaded model
+  --lang <de|en>         Suite language when --cases is omitted. Default: de
   --cases <file>         JSON or JSONL test case file
   --category <name>      Run only one category; can be repeated
   --limit <n>            Run first N matching cases

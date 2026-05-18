@@ -8,19 +8,25 @@
   </head>
   <body>
     <main class="shell">
-      <section class="topbar" aria-label="Status">
+      <section class="topbar" aria-label="Status" data-i18n-aria-label="topbar.status">
         <div>
           <p class="eyebrow">LM Studio Eval</p>
           <h1>Local Model Bench</h1>
         </div>
-        <div class="server-pill" id="serverState">Offline</div>
+        <div class="top-actions">
+          <div class="language-switch" aria-label="Sprache" data-i18n-aria-label="language.aria">
+            <button class="language-option" type="button" data-lang="de" aria-pressed="true">DE</button>
+            <button class="language-option" type="button" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+          <div class="server-pill" id="serverState">Offline</div>
+        </div>
       </section>
 
       <section class="layout">
         <aside class="panel controls">
           <div class="panel-head">
-            <h2>Run</h2>
-            <button id="refreshBtn" class="ghost" type="button">Refresh</button>
+            <h2 data-i18n="controls.run">Run</h2>
+            <button id="refreshBtn" class="ghost" type="button" data-i18n="actions.refresh">Refresh</button>
           </div>
 
           <label class="field">
@@ -29,19 +35,19 @@
           </label>
 
           <label class="field">
-            <span>Modell</span>
+            <span data-i18n="fields.model">Modell</span>
             <select id="modelSelect">
               <option value="auto">auto</option>
             </select>
           </label>
 
-          <div class="reasoning-cards" aria-label="Reasoning-Status">
+          <div class="reasoning-cards" aria-label="Reasoning-Status" data-i18n-aria-label="reasoning.aria">
             <div class="reasoning-card">
-              <span>Maximale Reasoning-Stufe</span>
+              <span data-i18n="reasoning.max">Maximale Reasoning-Stufe</span>
               <strong id="reasoningLevelsValue" class="reasoning-value bad">Off</strong>
             </div>
             <div class="reasoning-card">
-              <span>Reasoning im Test</span>
+              <span data-i18n="reasoning.inTest">Reasoning im Test</span>
               <strong id="reasoningUsageValue" class="reasoning-value bad">Off</strong>
             </div>
           </div>
@@ -60,17 +66,17 @@
           <div class="grid-2">
             <label class="field">
               <span>Max Tokens</span>
-              <input id="maxTokens" type="number" placeholder="unbegrenzt" min="16" />
+              <input id="maxTokens" type="number" placeholder="unbegrenzt" min="16" data-i18n-placeholder="placeholders.unlimited" />
             </label>
             <label class="field">
               <span>Limit</span>
-              <input id="limit" type="number" placeholder="alle" min="1" />
+              <input id="limit" type="number" placeholder="alle" min="1" data-i18n-placeholder="common.all" />
             </label>
           </div>
 
           <div class="category-head">
-            <span>Kategorien</span>
-            <button id="allCategoriesBtn" class="linklike" type="button">alle</button>
+            <span data-i18n="sections.categories">Kategorien</span>
+            <button id="allCategoriesBtn" class="linklike" type="button" data-i18n="common.all">alle</button>
           </div>
           <div id="categories" class="categories"></div>
 
@@ -85,7 +91,7 @@
             <div class="panel-head">
               <div>
                 <h2>Live</h2>
-                <p id="runLabel" class="subtle">Kein Lauf aktiv</p>
+                <p id="runLabel" class="subtle" data-i18n="run.none">Kein Lauf aktiv</p>
               </div>
               <div class="score-badge" id="liveScore">--%</div>
             </div>
@@ -93,7 +99,7 @@
             <div class="progress-wrap">
               <div class="progress-row">
                 <span id="overallText">0 / 0</span>
-                <span id="phaseText">bereit</span>
+                <span id="phaseText" data-i18n="phase.ready">bereit</span>
               </div>
               <div class="progress-track"><div id="overallBar" class="progress-fill"></div></div>
               <div class="progress-track thin"><div id="phaseBar" class="progress-fill accent"></div></div>
@@ -103,18 +109,18 @@
               <div class="current-case">
                 <div class="current-case-head">
                   <div>
-                    <p class="eyebrow">Aktueller Test</p>
+                    <p class="eyebrow" data-i18n="current.test">Aktueller Test</p>
                     <h3 id="currentTitle">--</h3>
                     <p id="currentMeta" class="subtle">--</p>
                   </div>
-                  <button id="abortCaseBtn" class="danger compact" type="button" disabled>Test abbrechen</button>
+                  <button id="abortCaseBtn" class="danger compact" type="button" disabled data-i18n="actions.abortTest">Test abbrechen</button>
                 </div>
               </div>
               <div class="metric-strip">
                 <div><span id="metricTtft">--</span><small>TTFT</small></div>
                 <div><span id="metricPrefill">--</span><small>Prefill</small></div>
                 <div><span id="metricTps">--</span><small>tok/s</small></div>
-                <div><span id="metricElapsed">--</span><small>Zeit</small></div>
+                <div><span id="metricElapsed">--</span><small data-i18n="metrics.time">Zeit</small></div>
               </div>
             </div>
 
@@ -123,7 +129,7 @@
 
           <section class="panel">
             <div class="panel-head">
-              <h2>Ergebnisse</h2>
+              <h2 data-i18n="sections.results">Ergebnisse</h2>
               <span id="resultCount" class="subtle">0 Tests</span>
             </div>
             <div id="categoryChart" class="category-chart"></div>
@@ -132,11 +138,11 @@
                 <thead>
                   <tr>
                     <th>Test</th>
-                    <th>Kategorie</th>
-                    <th>Ergebnis</th>
+                    <th data-i18n="sections.category">Kategorie</th>
+                    <th data-i18n="sections.result">Ergebnis</th>
                     <th>TTFT</th>
                     <th>tok/s</th>
-                    <th>Zeit</th>
+                    <th data-i18n="metrics.time">Zeit</th>
                   </tr>
                 </thead>
                 <tbody id="resultsBody"></tbody>
@@ -147,7 +153,7 @@
 
         <aside class="panel runs">
           <div class="panel-head">
-            <h2>Vergleich</h2>
+            <h2 data-i18n="sections.compare">Vergleich</h2>
             <button id="reloadRunsBtn" class="ghost" type="button">Runs</button>
           </div>
           <div id="comparisonFilters" class="compare-filters"></div>

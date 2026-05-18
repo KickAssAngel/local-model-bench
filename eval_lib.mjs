@@ -82,9 +82,10 @@ export function caseNativePayload(testCase) {
   if (nonSystem.length === 1 && nonSystem[0].role === "user") {
     return { system_prompt: systemPrompt, input: nonSystem[0].content };
   }
+  const englishLabels = /\bYou are a precision parser\b/.test(systemPrompt);
   const input = nonSystem
     .map((message) => {
-      const label = message.role === "assistant" ? "Assistent" : "Nutzer";
+      const label = message.role === "assistant" ? (englishLabels ? "Assistant" : "Assistent") : englishLabels ? "User" : "Nutzer";
       return `${label}: ${message.content}`;
     })
     .join("\n\n");
@@ -536,6 +537,7 @@ export function timestamp() {
 }
 
 export function summarize(results, runId, model, args = {}) {
+  const suiteLanguage = args.suiteLanguage || args.suite_language || "de";
   const categories = {};
   let autoEarned = 0;
   let autoPossible = 0;
@@ -620,6 +622,9 @@ export function summarize(results, runId, model, args = {}) {
     updated_at: args.updatedAt || args.updated_at || null,
     model,
     base_url: args.baseUrl,
+    suite_language: suiteLanguage,
+    suite_id: args.suiteId || args.suite_id || `praxis_${suiteLanguage}`,
+    suite_file: args.suiteFile || args.suite_file || null,
     case_count: results.length,
     auto_earned: autoEarned,
     auto_possible: autoPossible,

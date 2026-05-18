@@ -1,13 +1,15 @@
 # Local Model Bench
 
-Local Model Bench is a local benchmark UI for comparing language models served through LM Studio.
+Local Model Bench is a local bilingual benchmark UI for comparing language models served through LM Studio.
 
-It focuses on practical, objective model quality checks: every default test expects one canonical JSON answer and is scored automatically. The UI shows live progress, per-category results, per-test comparisons, speed metrics, quantization metadata, and ranking views.
+It focuses on practical, objective model quality checks: every benchmark case expects one canonical JSON answer and is scored automatically. The UI supports matched German and English benchmark suites, stores suite metadata with each run, and keeps rankings separated by suite language. It also shows live progress, per-category results, per-test comparisons, speed metrics, quantization metadata, and ranking views.
 
 ## What It Does
 
-- Runs a balanced 200-case benchmark suite against LM Studio models.
+- Runs matched German and English 200-case benchmark suites against LM Studio models.
 - Scores model outputs with exact, objective JSON checks.
+- Switches the UI and active suite between German and English.
+- Keeps German and English runs separate for comparisons and auto-batch decisions.
 - Shows live test progress, streaming output, TTFT, prefill timing, tokens per second, and total time.
 - Compares models by overall score, category score, individual tests, speed, size, quantization, and model type.
 - Detects reported reasoning support and requests the strongest available reasoning mode.
@@ -61,9 +63,22 @@ node start_ui.mjs --no-open
 
 Results are written to the local `runs` folder. That folder is ignored by Git because it can contain private prompts, model outputs, timings, and model names.
 
+## Language And Suite Handling
+
+Local Model Bench ships with two matched suites:
+
+- German UI loads the frozen German reference suite.
+- English UI loads the English suite derived from that reference.
+
+Both suites contain the same 200 case IDs in the same order, with the same categories, tags, difficulty metadata, and points. The English suite changes only language, field names, and language-specific enum values where needed. Numbers, dates, IDs, ordering constraints, and the expected underlying solution are kept aligned.
+
+Runs store the suite language, suite ID, and suite file. Older runs without this metadata are treated as German runs. Ranking views, comparison filters, and auto-batch mode use the currently selected UI language by default, so a German run does not silently compete with an English run.
+
+The language switch is disabled while a benchmark is running. This keeps a live run tied to the suite it started with.
+
 ## Batch Mode
 
-When `auto` is selected, the app tests loaded model variants that do not already have a complete run for the current test selection.
+When `auto` is selected, the app tests loaded model variants that do not already have a complete run for the current suite language and test selection.
 
 Between two batch runs, Local Model Bench:
 
@@ -76,7 +91,7 @@ This avoids loading a large second model while the previous one still occupies G
 
 ## Benchmark Design
 
-The default suite contains 10 equally weighted categories with 20 tests each:
+Each suite contains 10 equally weighted categories with 20 tests each:
 
 - Instruction & Format
 - Documents & Context
@@ -90,6 +105,8 @@ The default suite contains 10 equally weighted categories with 20 tests each:
 - Multi-Turn & Context
 
 Every default test has exactly one expected canonical JSON result. A semantically similar but structurally different answer is scored as wrong. This keeps model comparisons objective and reproducible.
+
+The German suite is the frozen reference for historical comparability. The English suite is maintained as a paired translation and validated against that reference before release.
 
 ## Metrics
 
@@ -116,10 +133,22 @@ Validate the benchmark cases:
 node run_eval.mjs --dry-run
 ```
 
+Validate the English suite:
+
+```bash
+node run_eval.mjs --dry-run --lang en
+```
+
 Run a CLI benchmark against the currently loaded model:
 
 ```bash
 node run_eval.mjs
+```
+
+Run the English CLI benchmark:
+
+```bash
+node run_eval.mjs --lang en
 ```
 
 Compare two saved runs:
@@ -144,7 +173,7 @@ Check the project:
 npm run check
 ```
 
-Rebuild the default benchmark suite from the generator:
+Rebuild and validate the paired English benchmark suite:
 
 ```bash
 npm run build:cases

@@ -26,7 +26,20 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = path.join(__dirname, "web");
 const RUNS_DIR = path.join(__dirname, "runs");
-const DEFAULT_CASES = path.join(__dirname, "testfaelle", "praxis_de.json");
+const CASE_SUITES = {
+  de: {
+    language: "de",
+    id: "praxis_de",
+    file: path.join(__dirname, "testfaelle", "praxis_de.json"),
+    relativeFile: "testfaelle/praxis_de.json",
+  },
+  en: {
+    language: "en",
+    id: "praxis_en",
+    file: path.join(__dirname, "testfaelle", "praxis_en.json"),
+    relativeFile: "testfaelle/praxis_en.json",
+  },
+};
 const WATCHDOG_CHECK_INTERVAL_MS = 5000;
 const WATCHDOG_IDLE_SECONDS = 180;
 const WATCHDOG_REASONING_REVIEW_SECONDS = 300;
@@ -51,6 +64,14 @@ const REASONING_STRENGTH = {
   max: 6,
 };
 const activeRuns = new Map();
+
+function normalizeSuiteLanguage(value) {
+  return value === "en" ? "en" : "de";
+}
+
+function caseSuiteForLanguage(value) {
+  return CASE_SUITES[normalizeSuiteLanguage(value)];
+}
 
 function parseArgs(argv) {
   const args = { port: 8787, host: "127.0.0.1" };
@@ -508,11 +529,15 @@ async function unloadModelAndWait(body) {
   throw new Error(`LM Studio meldet ${model} nach ${timeoutSeconds}s weiterhin als geladen.${unloadDetail}${details}`);
 }
 
-async function loadCaseMetadata() {
-  const cases = await loadCases(DEFAULT_CASES);
+async function loadCaseMetadata(language = "de") {
+  const suite = caseSuiteForLanguage(language);
+  const cases = await loadCases(suite.file);
   const errors = validateCases(cases);
   const categories = [...new Set(cases.map((item) => item.category || "uncategorized"))].sort();
   return {
+    suite_language: suite.language,
+    suite_id: suite.id,
+    suite_file: suite.relativeFile,
     count: cases.length,
     categories,
     errors,
@@ -520,8 +545,8 @@ async function loadCaseMetadata() {
   };
 }
 
-async function loadCaseMap() {
-  const cases = await loadCases(DEFAULT_CASES);
+async function loadCaseMap(language = "de") {
+  const cases = await loadCases(caseSuiteForLanguage(language).file);
   return new Map(cases.map((testCase) => [testCase.id, publicCase(testCase, true)]));
 }
 
@@ -550,6 +575,9 @@ async function listRuns() {
             summarize(results, summary.run_id || entry.name, summary.model, {
               baseUrl: summary.base_url,
               modelDetails: summary.model_details,
+              suiteLanguage: summary.suite_language || "de",
+              suiteId: summary.suite_id || "praxis_de",
+              suiteFile: summary.suite_file || CASE_SUITES.de.relativeFile,
               temperature: summary.defaults?.temperature,
               topP: summary.defaults?.top_p,
               maxTokens: summary.defaults?.max_tokens,
@@ -566,6 +594,9 @@ async function listRuns() {
         id: entry.name,
         model: summary.model,
         model_details: summary.model_details || null,
+        suite_language: summary.suite_language || "de",
+        suite_id: summary.suite_id || "praxis_de",
+        suite_file: summary.suite_file || CASE_SUITES.de.relativeFile,
         created_at: summary.created_at,
         updated_at: summary.updated_at || null,
         case_count: summary.case_count,
@@ -596,7 +627,8 @@ function safeRunPath(runId, fileName = "") {
 async function loadRun(runId) {
   const summary = JSON.parse(await readFile(safeRunPath(runId, "summary.json"), "utf8"));
   hydrateSummaryModelDetails(summary, await fetchAvailableModelCatalog());
-  const caseById = await loadCaseMap();
+  const suiteLanguage = summary.suite_language || "de";
+  const caseById = await loadCaseMap(suiteLanguage);
   const resultLines = (await readFile(safeRunPath(runId, "results.jsonl"), "utf8"))
     .split(/\r?\n/)
     .filter(Boolean);
@@ -604,6 +636,9 @@ async function loadRun(runId) {
   const derivedSummary = summarize(results, summary.run_id || runId, summary.model, {
     baseUrl: summary.base_url,
     modelDetails: summary.model_details,
+    suiteLanguage,
+    suiteId: summary.suite_id || `praxis_${suiteLanguage}`,
+    suiteFile: summary.suite_file || caseSuiteForLanguage(suiteLanguage).relativeFile,
     temperature: summary.defaults?.temperature,
     topP: summary.defaults?.top_p,
     maxTokens: summary.defaults?.max_tokens,
@@ -625,6 +660,7 @@ async function deleteRun(runId) {
 
 async function updateReview(runId, caseId, body, clear = false) {
   const loaded = await loadRun(runId);
+  const suite = caseSuiteForLanguage(loaded.summary.suite_language);
   const results = loaded.results.map((record) => normalizeResultRecord(record));
   const index = results.findIndex((record) => record.id === caseId);
   if (index === -1) throw new Error(`Case not found in run: ${caseId}`);
@@ -633,6 +669,9 @@ async function updateReview(runId, caseId, body, clear = false) {
   const summary = summarize(results, loaded.summary.run_id || runId, loaded.summary.model, {
     baseUrl: loaded.summary.base_url,
     modelDetails: loaded.summary.model_details,
+    suiteLanguage: suite.language,
+    suiteId: loaded.summary.suite_id || suite.id,
+    suiteFile: loaded.summary.suite_file || suite.relativeFile,
     temperature: loaded.summary.defaults?.temperature,
     topP: loaded.summary.defaults?.top_p,
     maxTokens: loaded.summary.defaults?.max_tokens,
@@ -726,10 +765,14 @@ function sendReplay(run, res) {
 }
 
 function buildSettings(body) {
+  const suite = caseSuiteForLanguage(body.suiteLanguage || body.suite_language || body.lang || body.language);
   return {
     baseUrl: body.baseUrl || "http://localhost:1234/v1",
     apiKey: body.apiKey || process.env.LM_STUDIO_API_KEY || "lm-studio",
     model: body.model || "auto",
+    suiteLanguage: suite.language,
+    suiteId: suite.id,
+    suiteFile: suite.relativeFile,
     categories: Array.isArray(body.categories) ? body.categories : [],
     limit: body.limit ? Number(body.limit) : null,
     timeout: body.timeout ? Number(body.timeout) : 900,
@@ -779,7 +822,8 @@ async function runEval(run) {
   const runDir = path.join(RUNS_DIR, run.id);
   await mkdir(runDir, { recursive: true });
 
-  let cases = await loadCases(DEFAULT_CASES);
+  const suite = caseSuiteForLanguage(run.settings.suiteLanguage);
+  let cases = await loadCases(suite.file);
   const errors = validateCases(cases);
   if (errors.length) throw new Error(errors.join("\n"));
   if (run.settings.categories.length) {
@@ -1407,7 +1451,7 @@ async function route(req, res) {
       return;
     }
     if (req.method === "GET" && pathname === "/api/cases") {
-      json(res, 200, await loadCaseMetadata());
+      json(res, 200, await loadCaseMetadata(url.searchParams.get("lang")));
       return;
     }
     if (req.method === "GET" && pathname === "/api/runs") {

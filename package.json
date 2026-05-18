@@ -1,7 +1,7 @@
 {
   "name": "local-model-bench",
-  "version": "0.1.0",
-  "description": "A local, objective benchmark UI for LM Studio models.",
+  "version": "0.2.0",
+  "description": "A local bilingual benchmark UI for comparing LM Studio models.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -16,9 +16,10 @@
   ],
   "scripts": {
     "start": "node start_ui.mjs",
-    "build:cases": "node scripts/build_frontier_suite.mjs",
+    "build:cases": "node scripts/build_english_suite.mjs && node scripts/validate_case_pairs.mjs",
+    "check:cases": "node scripts/validate_case_pairs.mjs",
     "ui": "node ui_server.mjs",
     "eval": "node run_eval.mjs",
-    "check": "node --check ui_server.mjs && node --check eval_lib.mjs && node --check web/app.js && node --check run_eval.mjs && node --check compare_runs.mjs && node --check start_ui.mjs && node --check scripts/build_frontier_suite.mjs"
+    "check": "node --check ui_server.mjs && node --check eval_lib.mjs && node --check web/app.js && node --check run_eval.mjs && node --check compare_runs.mjs && node --check start_ui.mjs && node --check scripts/build_frontier_suite.mjs && node --check scripts/english_suite_transform.mjs && node --check scripts/build_english_suite.mjs && node --check scripts/validate_case_pairs.mjs && node scripts/validate_case_pairs.mjs"
   }
 }
