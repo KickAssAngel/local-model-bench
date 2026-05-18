@@ -4,7 +4,9 @@ Local Model Bench is a local bilingual benchmark UI for comparing language model
 
 It focuses on practical, objective model quality checks: every benchmark case expects one canonical JSON answer and is scored automatically. The UI supports matched German and English benchmark suites, stores suite metadata with each run, and keeps rankings separated by suite language. It also shows live progress, per-category results, per-test comparisons, speed metrics, quantization metadata, and ranking views.
 
-![Local Model Bench dashboard showing a live English benchmark run, result table, and rankings](docs/assets/local-model-bench-en.png)
+| English UI | German UI |
+| --- | --- |
+| ![Local Model Bench dashboard showing a live English benchmark run, result table, and rankings](docs/assets/local-model-bench-en.png) | ![Local Model Bench dashboard showing a live German benchmark run, result table, and category rankings](docs/assets/local-model-bench-de.png) |
 
 ## What It Does
 
